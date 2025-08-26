@@ -42,10 +42,14 @@ public class UserService {
 	}
 
 	public Users findByEmail(String email) {
-		if (email == null) {
+		if (email == null || email.trim().isEmpty()) {
 			return null;
 		}
 		return userRepository.findByEmail(email.trim());
+	}
+
+	public void deleteUser(Users user) {
+		userRepository.deleteByEmail(user.getEmail());
 	}
 
 }

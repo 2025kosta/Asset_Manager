@@ -24,4 +24,8 @@ public class UserRepository {
 		return userMap.get(email.toLowerCase());
 	}
 
+	public void deleteByEmail(String email) {
+		userMap.remove(email.toLowerCase());
+	}
+
 }
