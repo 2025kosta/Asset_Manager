@@ -5,26 +5,27 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Optional;
+import java.util.UUID;
 
 import domain.Category;
 import domain.CategoryKind;
 
 public class CategoryRepository {
-	private static Map<Integer, Category> categories = new HashMap<>();
-	private static int cnt;
+	private static Map<UUID, Category> categories = new HashMap<>();
+	private static int cnt = 0;
 
 	// Create
 	public Category save(Category category) {
-		if (category.getId() == 0) {
+		if (category.getId() == null) {
 			cnt++;
-			category.setId(cnt);
+			category.setId(UUID.randomUUID());
 		}
 		categories.put(category.getId(), category);
 		return category;
 	}
 
 	// Read id
-	public Optional<Category> findById(int id) {
+	public Optional<Category> findById(UUID id) {
 		return Optional.ofNullable(categories.get(id));
 	}
 
@@ -40,7 +41,7 @@ public class CategoryRepository {
 	}
 
 	// delete
-	public void deleteById(int id) {
+	public void deleteById(UUID id) {
 		categories.remove(id);
 	}
 

@@ -1,12 +1,14 @@
 package domain;
 
+import java.util.UUID;
+
 public class Category {
-	private int Id;
+	private UUID Id;
 	private String name;
 	private CategoryKind category;
 
 	// Getter
-	public int getId() {
+	public UUID getId() {
 		return Id;
 	}
 
@@ -23,8 +25,8 @@ public class Category {
 		this.name = name;
 	}
 
-	public void setId(int Id) {
-		Id = Id;
+	public void setId(UUID id) {
+		Id = id;
 	}
 
 	// Constructor
