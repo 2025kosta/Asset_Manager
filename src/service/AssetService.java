@@ -2,6 +2,8 @@ package service;
 
 import java.util.Comparator;
 import java.util.List;
+import java.util.Optional;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import domain.Asset;
@@ -41,19 +43,19 @@ public class AssetService {
 				.collect(Collectors.toList());
 	}
 
-	public String updateAsset(Users user, int index, String newName, String newType) {
-		List<Asset> assets = findAssetsByUser(user);
-		if (index < 0 || index >= assets.size()) {
-			return "❌ 잘못된 번호입니다.";
+	public String updateAsset(Users user, UUID assetId, String newName, String newType) {
+		Optional<Asset> optionalAsset = assetRepository.findById(user, assetId);
+		if (optionalAsset.isEmpty()) {
+			return "❌ 자산을 찾을 수 없습니다.";
 		}
-		Asset asset = assets.get(index);
+		Asset asset = optionalAsset.get();
 
 		String updatedName = newName.isBlank() ? asset.getName() : newName.trim();
 		String updatedType = newType.isBlank() ? asset.getType() : newType.trim();
 
-		// 기존 정보와 다르면 중복 체크
-		if (assets.stream().anyMatch(a -> a != asset && a.getName().equalsIgnoreCase(updatedName)
-				&& a.getType().equalsIgnoreCase(updatedType))) {
+		boolean exists = assetRepository.findByUser(user).stream().anyMatch(a -> !a.getId().equals(asset.getId())
+				&& a.getName().equalsIgnoreCase(updatedName) && a.getType().equalsIgnoreCase(updatedType));
+		if (exists) {
 			return "❌ 동일한 이름과 유형의 자산이 이미 존재합니다.";
 		}
 
@@ -62,12 +64,12 @@ public class AssetService {
 		return "✅ 자산이 수정되었습니다.";
 	}
 
-	public String deleteAsset(Users user, int index) {
-		List<Asset> assets = findAssetsByUser(user);
-		if (index < 0 || index >= assets.size()) {
-			return "❌ 잘못된 번호입니다.";
+	public String deleteAsset(Users user, UUID assetId) {
+		Optional<Asset> optionalAsset = assetRepository.findById(user, assetId);
+		if (optionalAsset.isEmpty()) {
+			return "❌ 자산을 찾을 수 없습니다.";
 		}
-		Asset target = assets.get(index);
+		Asset target = optionalAsset.get();
 
 		// TODO: 기록 연결 여부 확인 후 삭제 (현재는 생략)
 		// boolean hasRecord = recordRepository.existsByAsset(target);
@@ -82,5 +84,4 @@ public class AssetService {
 	public void deleteAllByUser(Users user) {
 		assetRepository.deleteAllByUser(user);
 	}
-
 }
