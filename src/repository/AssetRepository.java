@@ -29,23 +29,14 @@ public class AssetRepository {
 				.anyMatch(a -> a.getName().equalsIgnoreCase(name) && a.getType().equalsIgnoreCase(type));
 	}
 
-	// index 기반 자산 조회
-	public Optional<Asset> findByIndex(Users user, int index) {
-		List<Asset> list = findByUser(user);
-		if (index < 0 || index >= list.size()) {
-			return Optional.empty();
-		}
-		return Optional.of(list.get(index));
+	// 자산 조회
+	public Optional<Asset> findById(Users user, UUID id) {
+		return findByUser(user).stream().filter(asset -> asset.getId().equals(id)).findFirst();
 	}
 
-	// index 기반 삭제
-	public boolean deleteByIndex(Users user, int index) {
-		List<Asset> list = findByUser(user);
-		if (index < 0 || index >= list.size()) {
-			return false;
-		}
-		list.remove(index);
-		return true;
+	// 삭제
+	public boolean deleteById(Users user, UUID id) {
+		return findByUser(user).removeIf(asset -> asset.getId().equals(id));
 	}
 
 	// Asset 객체 자체로 삭제

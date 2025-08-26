@@ -3,6 +3,7 @@ package controller;
 import java.util.List;
 import java.util.Scanner;
 import java.util.Set;
+import java.util.UUID;
 import java.util.stream.Collectors;
 
 import domain.Asset;
@@ -88,8 +89,22 @@ public class AssetController {
 		}
 		viewAssets();
 
-		System.out.print("👉 수정할 자산 번호: ");
-		int index = Integer.parseInt(scanner.nextLine()) - 1;
+		System.out.print("👉 수정할 자산 번호 입력: ");
+		int index;
+		try {
+			index = Integer.parseInt(scanner.nextLine()) - 1; // 1-based → 0-based
+		} catch (NumberFormatException e) {
+			System.out.println("❌ 숫자를 입력해주세요.");
+			return;
+		}
+
+		if (index < 0 || index >= assets.size()) {
+			System.out.println("❌ 잘못된 번호입니다.");
+			return;
+		}
+
+		Asset selected = assets.get(index); // 번호 → 자산 객체
+		UUID assetId = selected.getId();
 
 		System.out.print("👉 새 이름 (변경 없으면 Enter): ");
 		String name = scanner.nextLine();
@@ -98,7 +113,7 @@ public class AssetController {
 		String type = scanner.nextLine();
 
 		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-		String result = assetService.updateAsset(currentUser, index, name, type);
+		String result = assetService.updateAsset(currentUser, assetId, name, type);
 		System.out.println("\n" + result);
 	}
 
@@ -110,10 +125,23 @@ public class AssetController {
 		}
 		viewAssets();
 
-		System.out.print("👉 삭제할 자산 번호: ");
-		int index = Integer.parseInt(scanner.nextLine()) - 1;
+		System.out.print("👉 삭제할 자산 번호 입력: ");
+		int index;
+		try {
+			index = Integer.parseInt(scanner.nextLine()) - 1; // 1-based → 0-based
+		} catch (NumberFormatException e) {
+			System.out.println("❌ 숫자를 입력해주세요.");
+			return;
+		}
 
-		String result = assetService.deleteAsset(currentUser, index);
+		if (index < 0 || index >= assets.size()) {
+			System.out.println("❌ 잘못된 번호입니다.");
+			return;
+		}
+
+		UUID assetId = assets.get(index).getId();
+
+		String result = assetService.deleteAsset(currentUser, assetId);
 		System.out.println("\n" + result);
 	}
 
@@ -129,12 +157,12 @@ public class AssetController {
 			long total = 0;
 			int idx = 1;
 			System.out.printf("%-4s %-10s %-10s %-15s\n", "번호", "자산명", "유형", "잔액");
-			System.out.println("--------------------------------------------------");
+			System.out.println("-----------------------------------------------------------------------------------");
 			for (Asset a : assets) {
 				System.out.printf("%-4d %-10s %-10s %,15d원\n", idx++, a.getName(), a.getType(), a.getBalance());
 				total += a.getBalance();
 			}
-			System.out.println("--------------------------------------------------");
+			System.out.println("-----------------------------------------------------------------------------------");
 			System.out.printf("총 자산 합계: %,15d원\n", total);
 		}
 
