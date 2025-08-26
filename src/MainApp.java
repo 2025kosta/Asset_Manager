@@ -2,6 +2,8 @@
 import java.util.Scanner;
 
 import controller.AssetController;
+import controller.CategoryController;
+import controller.TransactionController;
 import controller.UserController;
 
 public class MainApp {
@@ -10,6 +12,8 @@ public class MainApp {
 		Scanner scanner = new Scanner(System.in);
 		UserController userController = new UserController(scanner);
 		AssetController assetController = new AssetController(scanner);
+		CategoryController categoryController = new CategoryController(scanner);
+		TransactionController transactionController = new TransactionController(scanner);
 
 		while (true) {
 			System.out.println("\n================= 📊 자산관리 시스템 =================");
@@ -32,7 +36,7 @@ public class MainApp {
 			case 2 -> {
 				if (userController.login()) {
 					assetController.setCurrentUser(userController.getCurrentUser());
-					loginMenu(scanner, userController, assetController);
+					loginMenu(scanner, userController, assetController, categoryController, transactionController);
 				}
 			}
 			case 0 -> {
@@ -44,12 +48,13 @@ public class MainApp {
 		}
 	}
 
-	private static void loginMenu(Scanner scanner, UserController userController, AssetController assetController) {
+	private static void loginMenu(Scanner scanner, UserController userController, AssetController assetController,
+			CategoryController categoryController, TransactionController transactionController) {
 		while (true) {
 			System.out.println("\n환영합니다, " + userController.getCurrentUser().getName() + "님!");
 			System.out.println("================= 🧭 메인 메뉴 =================");
 			System.out.println("1. 💼 자산 관리");
-			System.out.println("2. 📁 카테고리 관리 (미구현)");
+			System.out.println("2. 📁 카테고리 관리");
 			System.out.println("3. 🧾 기록 관리 (미구현)");
 			System.out.println("4. 🔒 로그아웃");
 			System.out.println("5. 🗑️ 사용자 삭제");
@@ -59,7 +64,8 @@ public class MainApp {
 
 			switch (input) {
 			case "1" -> assetController.mainMenu();
-			case "2", "3" -> System.out.println("\n⚠️ 해당 기능은 아직 구현되지 않았습니다.");
+			case "2" -> categoryController.mainMenu();
+			case "3" -> System.out.println("\n⚠️ 해당 기능은 아직 구현되지 않았습니다.");
 			case "4" -> {
 				System.out.println("\n🔒 로그아웃 되었습니다.");
 				return;

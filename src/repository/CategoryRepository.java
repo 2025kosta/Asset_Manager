@@ -25,7 +25,7 @@ public class CategoryRepository {
 	}
 
 	// Read id
-	public Optional<Category> findById(int id) {
+	public Optional<Category> findById(UUID id) {
 		return Optional.ofNullable(categories.get(id));
 	}
 
@@ -41,7 +41,7 @@ public class CategoryRepository {
 	}
 
 	// delete
-	public void deleteById(int id) {
+	public void deleteById(UUID id) {
 		categories.remove(id);
 	}
 

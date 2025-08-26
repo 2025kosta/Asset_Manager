@@ -31,12 +31,11 @@ public class TransactionRepository {
 	}
 
 	// check category record
-	public boolean existCategory(int categoryId) {
-		return record.values().stream().anyMatch(c -> c.getCategoryId() == categoryId);
+	public boolean existCategory(UUID id) {
+		return record.values().stream().anyMatch(c -> c.getCategoryId() == id);
 	}
 
-	public List<Transaction> findBy(LocalDate start, LocalDate end, Integer assetId, Integer toAssetId, Long min,
-			Long max) {
+	public List<Transaction> findBy(LocalDate start, LocalDate end, UUID assetId, UUID toAssetId, Long min, Long max) {
 		Stream<Transaction> stream = record.values().stream();
 		if (start != null) {
 			stream.filter(t -> !t.getDateTime().toLocalDate().isBefore(start));

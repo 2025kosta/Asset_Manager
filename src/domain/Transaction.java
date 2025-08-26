@@ -9,13 +9,13 @@ public class Transaction {
 	private long amount;
 	private LocalDateTime dateTime;
 	private String memo;
-	private int categoryId;
-	private int assetId;
-	private int toAssetId;
+	private UUID categoryId;
+	private UUID assetId;
+	private UUID toAssetId;
 
 	// 상대가 없는 지출 생성자
-	public Transaction(CategoryKind type, long amount, LocalDateTime dateTime, String memo, int categoryId,
-			int assetId) {
+	public Transaction(CategoryKind type, long amount, LocalDateTime dateTime, String memo, UUID categoryId,
+			UUID assetId) {
 		super();
 		this.type = type;
 		this.amount = amount;
@@ -26,8 +26,8 @@ public class Transaction {
 	}
 
 	// 상대가 있는 이체 생성자
-	public Transaction(CategoryKind type, long amount, LocalDateTime dateTime, String memo, int categoryId, int assetId,
-			int toAssetId) {
+	public Transaction(CategoryKind type, long amount, LocalDateTime dateTime, String memo, UUID categoryId,
+			UUID assetId, UUID toAssetId) {
 		super();
 		this.type = type;
 		this.amount = amount;
@@ -59,15 +59,15 @@ public class Transaction {
 		return memo;
 	}
 
-	public int getCategoryId() {
+	public UUID getCategoryId() {
 		return categoryId;
 	}
 
-	public int getAssetId() {
+	public UUID getAssetId() {
 		return assetId;
 	}
 
-	public int getToAssetId() {
+	public UUID getToAssetId() {
 		return toAssetId;
 	}
 
