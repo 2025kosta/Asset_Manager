@@ -4,6 +4,7 @@ import java.util.Scanner;
 
 import domain.Users;
 import service.AssetService;
+import service.CategoryService;
 import service.UserService;
 
 public class UserController {
@@ -11,11 +12,14 @@ public class UserController {
 	private final UserService userService;
 	private final AssetService assetService;
 	private Users currentUser;
+	private final CategoryService categoryService;
 
-	public UserController(Scanner scanner) {
+	public UserController(Scanner scanner, UserService userService, AssetService assetService,
+			CategoryService categoryService) {
 		this.scanner = scanner;
-		this.userService = new UserService();
-		this.assetService = new AssetService();
+		this.userService = userService;
+		this.assetService = assetService;
+		this.categoryService = categoryService;
 	}
 
 	public void createUser() {
@@ -29,6 +33,11 @@ public class UserController {
 
 		String resultMsg = userService.createUser(name, email);
 		System.out.println("\n" + resultMsg);
+		Users user = userService.findByEmail(email);
+		if (user != null) {
+			categoryService.initDefaultCategory(user);
+			System.out.println("\n✅ 사용자 생성이 완료되었습니다.");
+		}
 	}
 
 	public boolean login() {

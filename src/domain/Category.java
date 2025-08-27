@@ -4,10 +4,15 @@ import java.util.UUID;
 
 public class Category {
 	private UUID Id;
+	private Users users;
 	private String name;
 	private CategoryKind category;
 
 	// Getter
+	public Users getUsers() {
+		return users;
+	}
+
 	public UUID getId() {
 		return Id;
 	}
@@ -30,7 +35,8 @@ public class Category {
 	}
 
 	// Constructor
-	public Category(String name, CategoryKind category) {
+	public Category(Users user, String name, CategoryKind category) {
+		this.users = user;
 		this.name = name;
 		this.category = category;
 	}

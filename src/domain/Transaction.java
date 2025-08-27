@@ -5,6 +5,7 @@ import java.util.UUID;
 
 public class Transaction {
 	private UUID id;
+	private Users users;
 	private CategoryKind type;
 	private long amount;
 	private LocalDateTime dateTime;
@@ -14,9 +15,9 @@ public class Transaction {
 	private UUID toAssetId;
 
 	// 상대가 없는 지출 생성자
-	public Transaction(CategoryKind type, long amount, LocalDateTime dateTime, String memo, UUID categoryId,
+	public Transaction(Users user, CategoryKind type, long amount, LocalDateTime dateTime, String memo, UUID categoryId,
 			UUID assetId) {
-		super();
+		this.users = user;
 		this.type = type;
 		this.amount = amount;
 		this.dateTime = dateTime;
@@ -26,9 +27,9 @@ public class Transaction {
 	}
 
 	// 상대가 있는 이체 생성자
-	public Transaction(CategoryKind type, long amount, LocalDateTime dateTime, String memo, UUID categoryId,
+	public Transaction(Users user, CategoryKind type, long amount, LocalDateTime dateTime, String memo, UUID categoryId,
 			UUID assetId, UUID toAssetId) {
-		super();
+		this.users = user;
 		this.type = type;
 		this.amount = amount;
 		this.dateTime = dateTime;
@@ -39,8 +40,13 @@ public class Transaction {
 	}
 
 	// getter
+
 	public UUID getId() {
 		return id;
+	}
+
+	public Users getUsers() {
+		return users;
 	}
 
 	public CategoryKind getType() {

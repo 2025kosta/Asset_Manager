@@ -10,50 +10,61 @@ import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
 import domain.Transaction;
+import domain.Users;
 
 public class TransactionRepository {
-	private static Map<UUID, Transaction> record = new HashMap<UUID, Transaction>();
-	private static int cnt = 0;
+	private final Map<UUID, Transaction> record = new HashMap<>();
 
 	// create
 	public Transaction save(Transaction transaction) {
 		if (transaction.getId() == null) {
-			cnt++;
 			transaction.setId(UUID.randomUUID());
 		}
 		record.put(transaction.getId(), transaction);
 		return transaction;
 	}
 
-	// read id
-	public Optional<Transaction> readById(int id) {
-		return Optional.ofNullable(record.get(id));
+	public Optional<Transaction> findById(UUID transactionId, Users user) {
+		Transaction transaction = record.get(transactionId);
+		if (transaction != null && transaction.getUsers().getId().equals(user.getId())) {
+			return Optional.of(transaction);
+		}
+		return Optional.empty();
 	}
 
-	// check category record
-	public boolean existCategory(UUID id) {
-		return record.values().stream().anyMatch(c -> c.getCategoryId() == id);
+	// delete by id
+	public void deleteById(UUID id, Users user) {
+		findById(id, user).ifPresent(transaction -> record.remove(id));
 	}
 
-	public List<Transaction> findBy(LocalDate start, LocalDate end, UUID assetId, UUID toAssetId, Long min, Long max) {
+	public boolean existsByCategoryId(UUID categoryId, Users user) {
+		return record.values().stream().filter(t -> t.getUsers().equals(user.getId()))
+				.anyMatch(t -> t.getCategoryId().equals(categoryId)); // ◀️ == 대신 .equals() 사용
+	}
+
+	public List<Transaction> findByConditions(Users user, LocalDate start, LocalDate end, UUID assetId, UUID categoryId,
+			Long min, Long max) {
 		Stream<Transaction> stream = record.values().stream();
+
+		stream = stream.filter(t -> t.getUsers().getId().equals(user.getId()));
+
 		if (start != null) {
-			stream.filter(t -> !t.getDateTime().toLocalDate().isBefore(start));
+			stream = stream.filter(t -> !t.getDateTime().toLocalDate().isBefore(start));
 		}
 		if (end != null) {
-			stream.filter(t -> !t.getDateTime().toLocalDate().isAfter(end));
+			stream = stream.filter(t -> !t.getDateTime().toLocalDate().isAfter(end));
 		}
 		if (assetId != null) {
-			stream.filter(t -> t.getAssetId() == assetId);
+			stream = stream.filter(t -> assetId.equals(t.getAssetId()) || assetId.equals(t.getToAssetId()));
 		}
-		if (toAssetId != null) {
-			stream.filter(t -> t.getToAssetId() == toAssetId);
+		if (categoryId != null) {
+			stream = stream.filter(t -> categoryId.equals(t.getCategoryId()));
 		}
 		if (min != null) {
-			stream.filter(t -> t.getAmount() >= min);
+			stream = stream.filter(t -> t.getAmount() >= min);
 		}
 		if (max != null) {
-			stream.filter(t -> t.getAmount() <= max);
+			stream = stream.filter(t -> t.getAmount() <= max);
 		}
 		return stream.collect(Collectors.toList());
 	}

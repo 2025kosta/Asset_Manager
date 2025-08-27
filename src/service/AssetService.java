@@ -15,8 +15,8 @@ public class AssetService {
 	private final AssetRepository assetRepository;
 	// private final RecordRepository recordRepository;
 
-	public AssetService() {
-		this.assetRepository = new AssetRepository();
+	public AssetService(AssetRepository assetRepository) {
+		this.assetRepository = assetRepository;
 		// this.recordRepository = new RecordRepository();
 	}
 
@@ -41,6 +41,10 @@ public class AssetService {
 		return assetRepository.findByUser(user).stream()
 				.sorted(Comparator.comparing(Asset::getType).thenComparing(Asset::getName))
 				.collect(Collectors.toList());
+	}
+
+	public Optional<Asset> findById(Users user, UUID assetId) {
+		return assetRepository.findById(user, assetId);
 	}
 
 	public String updateAsset(Users user, UUID assetId, String newName, String newType) {

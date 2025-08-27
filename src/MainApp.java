@@ -5,15 +5,31 @@ import controller.AssetController;
 import controller.CategoryController;
 import controller.TransactionController;
 import controller.UserController;
+import domain.Users;
+import repository.AssetRepository;
+import repository.CategoryRepository;
+import repository.TransactionRepository;
+import repository.UserRepository;
+import service.AssetService;
+import service.CategoryService;
+import service.TransactionService;
+import service.UserService;
 
 public class MainApp {
 
 	public static void main(String[] args) {
+		AssetRepository assetRepository = new AssetRepository();
+		CategoryRepository categoryRepository = new CategoryRepository();
+		TransactionRepository transactionRepository = new TransactionRepository();
+		UserRepository userRepository = new UserRepository();
+
+		AssetService assetService = new AssetService(assetRepository);
+		CategoryService categoryService = new CategoryService(categoryRepository, transactionRepository);
+		UserService userService = new UserService(userRepository);
+		TransactionService transactionService = new TransactionService(transactionRepository, assetRepository);
+
 		Scanner scanner = new Scanner(System.in);
-		UserController userController = new UserController(scanner);
-		AssetController assetController = new AssetController(scanner);
-		CategoryController categoryController = new CategoryController(scanner);
-		TransactionController transactionController = new TransactionController(scanner);
+		UserController userController = new UserController(scanner, userService, assetService, categoryService);
 
 		while (true) {
 			System.out.println("\n================= 📊 자산관리 시스템 =================");
@@ -35,7 +51,13 @@ public class MainApp {
 			case 1 -> userController.createUser();
 			case 2 -> {
 				if (userController.login()) {
-					assetController.setCurrentUser(userController.getCurrentUser());
+					Users currentUser = userController.getCurrentUser();
+					AssetController assetController = new AssetController(scanner, assetService);
+					assetController.setCurrentUser(currentUser);
+					CategoryController categoryController = new CategoryController(scanner, currentUser,
+							categoryService);
+					TransactionController transactionController = new TransactionController(scanner, currentUser,
+							transactionService, categoryService, assetService);
 					loginMenu(scanner, userController, assetController, categoryController, transactionController);
 				}
 			}
@@ -55,7 +77,7 @@ public class MainApp {
 			System.out.println("================= 🧭 메인 메뉴 =================");
 			System.out.println("1. 💼 자산 관리");
 			System.out.println("2. 📁 카테고리 관리");
-			System.out.println("3. 🧾 기록 관리 (미구현)");
+			System.out.println("3. 🧾 기록 관리 ");
 			System.out.println("4. 🔒 로그아웃");
 			System.out.println("5. 🗑️ 사용자 삭제");
 			System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
@@ -65,7 +87,7 @@ public class MainApp {
 			switch (input) {
 			case "1" -> assetController.mainMenu();
 			case "2" -> categoryController.mainMenu();
-			case "3" -> System.out.println("\n⚠️ 해당 기능은 아직 구현되지 않았습니다.");
+			case "3" -> transactionController.mainMenu();
 			case "4" -> {
 				System.out.println("\n🔒 로그아웃 되었습니다.");
 				return;

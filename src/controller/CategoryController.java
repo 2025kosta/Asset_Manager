@@ -6,16 +6,19 @@ import java.util.UUID;
 
 import domain.Category;
 import domain.CategoryKind;
+import domain.Users;
 import service.CategoryService;
 
 public class CategoryController {
 
 	private final Scanner scanner;
 	private final CategoryService categoryService;
+	private Users currentUser;
 
-	public CategoryController(Scanner scanner) {
+	public CategoryController(Scanner scanner, Users currentUser, CategoryService categoryService) {
 		this.scanner = scanner;
-		this.categoryService = new CategoryService();
+		this.currentUser = currentUser;
+		this.categoryService = categoryService;
 	}
 
 	public void mainMenu() {
@@ -45,9 +48,6 @@ public class CategoryController {
 		}
 	}
 
-	/**
-	 * 1. 카테고리 등록
-	 */
 	private void registerCategory() {
 		System.out.println("\n--- 카테고리 등록 ---");
 		System.out.print("등록할 카테고리 이름을 입력하세요: ");
@@ -71,14 +71,14 @@ public class CategoryController {
 			}
 		}
 
-		String result = categoryService.registerCategory(name, type);
+		String result = categoryService.registerCategory(currentUser, name, type);
 		System.out.println(result);
 	}
 
 	private void updateCategory() {
 		while (true) {
 			System.out.println("\n=============== 카테고리 수정 ===============");
-			List<Category> categories = categoryService.getSortedCategories();
+			List<Category> categories = categoryService.getSortedCategories(currentUser);
 			if (displayCategoryList(categories)) {
 				return;
 			}
@@ -104,7 +104,7 @@ public class CategoryController {
 			System.out.print("새 카테고리명을 입력하세요: ");
 			String newName = scanner.nextLine();
 
-			String resultMessage = categoryService.updateCategoryName(categoryId, newName);
+			String resultMessage = categoryService.updateCategoryName(currentUser, categoryId, newName);
 			System.out.println("\n" + resultMessage);
 
 			if (!askToContinue("계속 수정하시겠습니까?")) {
@@ -116,7 +116,7 @@ public class CategoryController {
 	private void deleteCategory() {
 		while (true) {
 			System.out.println("\n=============== 카테고리 삭제 ===============");
-			List<Category> categories = categoryService.getSortedCategories();
+			List<Category> categories = categoryService.getSortedCategories(currentUser);
 			if (displayCategoryList(categories)) {
 				return;
 			}
@@ -139,7 +139,7 @@ public class CategoryController {
 			String confirm = scanner.nextLine();
 
 			if (confirm.equalsIgnoreCase("Y")) {
-				String resultMessage = categoryService.deleteCategory(selectedCategory.getId());
+				String resultMessage = categoryService.deleteCategory(currentUser, selectedCategory.getId());
 				System.out.println(resultMessage);
 			} else {
 				System.out.println("삭제가 취소되었습니다.");
@@ -153,7 +153,7 @@ public class CategoryController {
 
 	private void viewAllCategories() {
 		System.out.println("\n--- 카테고리 전체 조회 ---");
-		List<Category> categories = categoryService.getSortedCategories();
+		List<Category> categories = categoryService.getSortedCategories(currentUser);
 		if (categories.isEmpty()) {
 			System.out.println("등록된 카테고리가 없습니다.");
 			return;
