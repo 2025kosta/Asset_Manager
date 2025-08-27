@@ -1,11 +1,7 @@
 package repository;
 
 import java.time.LocalDate;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.Optional;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
@@ -82,5 +78,21 @@ public class TransactionRepository {
 		}
 
 		return stream.collect(Collectors.toList());
+	}
+
+	public boolean existsByAssetId(Users user, UUID assetId) {
+		return record.values().stream()
+				.filter(t -> t.getUsers().getId().equals(user.getId()))
+				.anyMatch(t -> assetId.equals(t.getAssetId()) || assetId.equals(t.getToAssetId()));
+	}
+
+	public void deleteAllByUser(Users user) {
+		Iterator<Map.Entry<UUID, Transaction>> it = record.entrySet().iterator();
+		while (it.hasNext()) {
+			Map.Entry<UUID, Transaction> e = it.next();
+			if (e.getValue().getUsers().getId().equals(user.getId())) {
+				it.remove();
+			}
+		}
 	}
 }

@@ -9,19 +9,20 @@ import java.util.stream.Collectors;
 import domain.Asset;
 import domain.Users;
 import repository.AssetRepository;
-// import repository.RecordRepository;
+import repository.TransactionRepository;
 
 public class AssetService {
 	private final AssetRepository assetRepository;
-	// private final RecordRepository recordRepository;
+	private final TransactionRepository transactionRepository;
 
 	public AssetService() {
 		this.assetRepository = new AssetRepository();
+		this.transactionRepository = new TransactionRepository();
 	}
 
 	public AssetService(AssetRepository assetRepository) {
 		this.assetRepository = assetRepository;
-		// this.recordRepository = new RecordRepository();
+		this.transactionRepository = new TransactionRepository();
 	}
 
 	public String createAsset(Users user, String name, String type, long balance) {
@@ -77,15 +78,14 @@ public class AssetService {
 		if (optionalAsset.isEmpty()) {
 			return "❌ 자산을 찾을 수 없습니다.";
 		}
-		Asset target = optionalAsset.get();
 
-		// TODO: 기록 연결 여부 확인 후 삭제 (현재는 생략)
-		// boolean hasRecord = recordRepository.existsByAsset(target);
-		// if (hasRecord) {
-		// return "❌ 연결된 기록이 있어 삭제할 수 없습니다.";
-		// }
+		// ✅ 연결된 거래 기록 존재 시 삭제 불가
+		boolean inUse = transactionRepository.existsByAssetId(user, assetId);
+		if (inUse) {
+			return "❌ 연결된 기록이 있어 삭제할 수 없습니다.";
+		}
 
-		assetRepository.delete(target);
+		assetRepository.delete(optionalAsset.get());
 		return "✅ 자산이 삭제되었습니다.";
 	}
 

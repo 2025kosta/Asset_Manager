@@ -53,4 +53,8 @@ public class CategoryService {
 		list.sort(Comparator.comparing(Category::getCategory));
 		return list;
 	}
+
+	public void deleteAllByUser(Users user) {
+		categoryRepository.deleteAllByUser(user);
+	}
 }

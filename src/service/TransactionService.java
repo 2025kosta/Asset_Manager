@@ -97,4 +97,8 @@ public class TransactionService {
 		list.sort(Comparator.comparing(Transaction::getDateTime).reversed());
 		return list;
 	}
+
+	public void deleteAllByUser(Users user) {
+		transactionRepository.deleteAllByUser(user);
+	}
 }

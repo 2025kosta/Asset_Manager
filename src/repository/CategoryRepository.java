@@ -53,4 +53,8 @@ public class CategoryRepository {
 	public void deleteById(UUID id, Users user) {
 		findById(id, user).ifPresent(category -> categories.remove(id));
 	}
+
+	public void deleteAllByUser(Users user) {
+		categories.entrySet().removeIf(e -> e.getValue().getUsers().getId().equals(user.getId()));
+	}
 }
