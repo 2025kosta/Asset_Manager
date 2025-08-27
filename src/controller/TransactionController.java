@@ -6,7 +6,6 @@ import java.time.format.DateTimeParseException;
 import java.util.List;
 import java.util.Scanner;
 import java.util.UUID;
-import java.util.stream.Collectors;
 
 import domain.Asset;
 import domain.Category;
@@ -46,54 +45,53 @@ public class TransactionController {
 
 	public void mainMenu() {
 		while (true) {
-			System.out.println("\n=============== 거래 기록 관리 ===============");
-			System.out.println("1. 수입 기록 추가");
-			System.out.println("2. 지출 기록 추가");
-			System.out.println("3. 이체 기록 추가");
-			System.out.println("4. 기록 삭제");
-			System.out.println("5. 기록 조회");
-			System.out.println("0. 메인 메뉴로 돌아가기");
-			System.out.println("--------------------------------------------");
-			System.out.print("원하는 작업의 번호를 입력하세요: ");
+			System.out.println("\n================= 🧾 기록 관리 =================");
+			System.out.println("1. ➕ 수입 기록 추가");
+			System.out.println("2. ➖ 지출 기록 추가");
+			System.out.println("3. 🔁 이체 기록 추가");
+			System.out.println("4. 🗑️ 기록 삭제");
+			System.out.println("5. 🔎 기록 조회");
+			System.out.println("0. 🔙 메인 메뉴로 돌아가기");
+			System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+			System.out.print("👉 선택: ");
 
-			String choice = scanner.nextLine();
+			String choice = scanner.nextLine().trim();
 			switch (choice) {
-			case "1" -> addIncome();
-			case "2" -> addExpense();
-			case "3" -> addTransfer();
-			case "4" -> deleteTransaction();
-			case "5" -> searchTransactions();
-			case "0" -> {
-				System.out.println("메인 메뉴로 돌아갑니다.");
-				return;
-			}
-			default -> System.out.println("❌ 잘못된 입력입니다. 메뉴에 있는 번호를 입력해주세요.");
+				case "1" -> addIncome();
+				case "2" -> addExpense();
+				case "3" -> addTransfer();
+				case "4" -> deleteTransaction();
+				case "5" -> searchTransactions();
+				case "0" -> {
+					System.out.println("\n🔙 메인 메뉴로 돌아갑니다.");
+					return;
+				}
+				default -> System.out.println("\n❗ 올바른 번호를 입력해주세요.");
 			}
 		}
 	}
 
 	private void addIncome() {
-		System.out.println("\n--- 수입 기록 추가 ---");
+		System.out.println("\n[➕ 수입 기록 추가]");
 		try {
-			System.out.print("금액: ");
-			long amount = Long.parseLong(scanner.nextLine());
+			System.out.print("👉 금액: ");
+			long amount = Long.parseLong(scanner.nextLine().trim());
 
-			System.out.print("메모: ");
+			System.out.print("👉 메모: ");
 			String memo = scanner.nextLine();
 
+			System.out.println("\n--- 💼 입금 자산 선택 ---");
 			Asset selectedAsset = selectAsset(currentUser);
-			if (selectedAsset == null) {
-				return;
-			}
+			if (selectedAsset == null) return;
 
 			Category selectedCategory = selectCategory(currentUser, "INCOME");
-			if (selectedCategory == null) {
-				return;
-			}
+			if (selectedCategory == null) return;
 
-			String result = transactionService.addIncome(currentUser, amount, LocalDateTime.now(), memo,
-					selectedCategory.getId(), selectedAsset.getId());
-			System.out.println(result);
+			String result = transactionService.addIncome(
+					currentUser, amount, LocalDateTime.now(), memo,
+					selectedCategory.getId(), selectedAsset.getId()
+			);
+			System.out.println("\n" + result);
 
 		} catch (NumberFormatException e) {
 			System.out.println("❌ 금액은 숫자로 입력해야 합니다.");
@@ -101,27 +99,26 @@ public class TransactionController {
 	}
 
 	private void addExpense() {
-		System.out.println("\n--- 지출 기록 추가 ---");
+		System.out.println("\n[➖ 지출 기록 추가]");
 		try {
-			System.out.print("금액: ");
-			long amount = Long.parseLong(scanner.nextLine());
+			System.out.print("👉 금액: ");
+			long amount = Long.parseLong(scanner.nextLine().trim());
 
-			System.out.print("메모: ");
+			System.out.print("👉 메모: ");
 			String memo = scanner.nextLine();
 
+			System.out.println("\n--- 💳 출금 자산 선택 ---");
 			Asset selectedAsset = selectAsset(currentUser);
-			if (selectedAsset == null) {
-				return;
-			}
+			if (selectedAsset == null) return;
 
 			Category selectedCategory = selectCategory(currentUser, "EXPENSE");
-			if (selectedCategory == null) {
-				return;
-			}
+			if (selectedCategory == null) return;
 
-			String result = transactionService.addExpense(currentUser, amount, LocalDateTime.now(), memo,
-					selectedCategory.getId(), selectedAsset.getId());
-			System.out.println(result);
+			String result = transactionService.addExpense(
+					currentUser, amount, LocalDateTime.now(), memo,
+					selectedCategory.getId(), selectedAsset.getId()
+			);
+			System.out.println("\n" + result);
 
 		} catch (NumberFormatException e) {
 			System.out.println("❌ 금액은 숫자로 입력해야 합니다.");
@@ -129,25 +126,21 @@ public class TransactionController {
 	}
 
 	private void addTransfer() {
-		System.out.println("\n--- 이체 기록 추가 ---");
+		System.out.println("\n[🔁 이체 기록 추가]");
 		try {
-			System.out.print("금액: ");
-			long amount = Long.parseLong(scanner.nextLine());
+			System.out.print("👉 금액: ");
+			long amount = Long.parseLong(scanner.nextLine().trim());
 
-			System.out.print("메모: ");
+			System.out.print("👉 메모: ");
 			String memo = scanner.nextLine();
 
-			System.out.println("--- 출금 자산 선택 ---");
+			System.out.println("\n--- 💳 출금 자산 선택 ---");
 			Asset fromAsset = selectAsset(currentUser);
-			if (fromAsset == null) {
-				return;
-			}
+			if (fromAsset == null) return;
 
-			System.out.println("--- 입금 자산 선택 ---");
+			System.out.println("\n--- 💼 입금 자산 선택 ---");
 			Asset toAsset = selectAsset(currentUser);
-			if (toAsset == null) {
-				return;
-			}
+			if (toAsset == null) return;
 
 			if (fromAsset.getId().equals(toAsset.getId())) {
 				System.out.println("❌ 출금 자산과 입금 자산은 같을 수 없습니다.");
@@ -155,13 +148,13 @@ public class TransactionController {
 			}
 
 			Category selectedCategory = selectCategory(currentUser, "TRANSFER");
-			if (selectedCategory == null) {
-				return;
-			}
+			if (selectedCategory == null) return;
 
-			String result = transactionService.addTransfer(currentUser, amount, LocalDateTime.now(), memo,
-					selectedCategory.getId(), fromAsset.getId(), toAsset.getId());
-			System.out.println(result);
+			String result = transactionService.addTransfer(
+					currentUser, amount, LocalDateTime.now(), memo,
+					selectedCategory.getId(), fromAsset.getId(), toAsset.getId()
+			);
+			System.out.println("\n" + result);
 
 		} catch (NumberFormatException e) {
 			System.out.println("❌ 금액은 숫자로 입력해야 합니다.");
@@ -169,73 +162,78 @@ public class TransactionController {
 	}
 
 	private void deleteTransaction() {
-		System.out.println("\n--- 거래 기록 삭제 ---");
-		List<Transaction> transactions = transactionService.searchTransactions(currentUser, null, null, null, null,
-				null, null);
-
+		System.out.println("\n[🗑️ 거래 기록 삭제]");
+		List<Transaction> transactions = transactionService.searchTransactions(
+				currentUser, null, null, null, null, null, null
+		);
 		if (transactions.isEmpty()) {
-			System.out.println("삭제할 거래 기록이 없습니다.");
+			System.out.println("⚠️ 삭제할 거래 기록이 없습니다.");
 			return;
 		}
 
-		System.out.println("삭제할 거래 기록을 선택하세요:");
+		// 간단 리스트(번호/타입/메모/금액/날짜)
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 		for (int i = 0; i < transactions.size(); i++) {
 			Transaction t = transactions.get(i);
-			System.out.printf("%d. [%s] %s: %,d원 (%s)\n", (i + 1), t.getType(), t.getMemo(), t.getAmount(),
-					t.getDateTime().toLocalDate());
+			System.out.printf(
+					"%-3d [%s] %-10s | %,d원 | %s\n",
+					(i + 1),
+					t.getType().name(),
+					t.getMemo(),
+					t.getAmount(),
+					t.getDateTime().toLocalDate()
+			);
 		}
-		System.out.println("--------------------------------------------");
-		System.out.print("번호 입력 (0: 취소): ");
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		System.out.print("👉 삭제할 번호 입력 (0: 취소): ");
 
 		try {
-			int choice = Integer.parseInt(scanner.nextLine());
-			if (choice == 0) {
-				return;
-			}
+			int choice = Integer.parseInt(scanner.nextLine().trim());
+			if (choice == 0) return;
 			if (choice < 1 || choice > transactions.size()) {
 				System.out.println("❌ 잘못된 번호입니다.");
 				return;
 			}
 			Transaction selectedTx = transactions.get(choice - 1);
 			String result = transactionService.deleteTransaction(currentUser, selectedTx.getId());
-			System.out.println(result);
+			System.out.println("\n" + result);
 		} catch (NumberFormatException e) {
 			System.out.println("❌ 숫자로 입력해야 합니다.");
 		}
 	}
 
 	private void searchTransactions() {
-		System.out.println("\n--- 기록 조회 및 검색 ---");
-		System.out.println("💡 각 항목에 대해 Enter를 누르면 해당 조건은 건너뜁니다.");
+		System.out.println("\n[🔎 기록 조회 및 검색]");
+		System.out.println("💡 각 항목에서 Enter는 해당 조건을 건너뜁니다.");
 
 		try {
 			System.out.print("👉 시작 날짜 (YYYY-MM-DD): ");
-			String startStr = scanner.nextLine();
+			String startStr = scanner.nextLine().trim();
 			LocalDate startDate = startStr.isBlank() ? null : LocalDate.parse(startStr);
 
 			System.out.print("👉 종료 날짜 (YYYY-MM-DD): ");
-			String endStr = scanner.nextLine();
+			String endStr = scanner.nextLine().trim();
 			LocalDate endDate = endStr.isBlank() ? null : LocalDate.parse(endStr);
 
-			System.out.println("--- 자산 선택 (전체: 0 또는 Enter) ---");
-			Asset asset = selectAsset(currentUser);
+			System.out.println("\n--- 💼 자산 선택 (0: 전체) ---");
+			Asset asset = selectAsset(currentUser); // 0 입력 시 null 반환 → 전체
 			UUID assetId = (asset != null) ? asset.getId() : null;
 
-			System.out.println("--- 카테고리 선택 (전체: 0 또는 Enter) ---");
-			Category category = selectCategory(currentUser, null);
+			System.out.println("\n--- 📂 카테고리 선택 (0: 전체) ---");
+			Category category = selectCategory(currentUser, null); // 0 입력 시 null 반환 → 전체
 			UUID categoryId = (category != null) ? category.getId() : null;
 
 			System.out.print("👉 최소 금액: ");
-			String minStr = scanner.nextLine();
+			String minStr = scanner.nextLine().trim();
 			Long minAmount = minStr.isBlank() ? null : Long.parseLong(minStr);
 
 			System.out.print("👉 최대 금액: ");
-			String maxStr = scanner.nextLine();
+			String maxStr = scanner.nextLine().trim();
 			Long maxAmount = maxStr.isBlank() ? null : Long.parseLong(maxStr);
 
-			List<Transaction> results = transactionService.searchTransactions(currentUser, startDate, endDate, assetId,
-					categoryId, minAmount, maxAmount);
-
+			List<Transaction> results = transactionService.searchTransactions(
+					currentUser, startDate, endDate, assetId, categoryId, minAmount, maxAmount
+			);
 			displayTransactions(results);
 
 		} catch (DateTimeParseException e) {
@@ -252,19 +250,19 @@ public class TransactionController {
 			return null;
 		}
 		while (true) {
-			System.out.println("자산 번호를 선택하세요 (0: 취소):");
+			System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+			System.out.println("번호  자산명           잔액");
+			System.out.println("--------------------------------------------------");
 			for (int i = 0; i < assets.size(); i++) {
 				Asset a = assets.get(i);
-				System.out.printf("%d. %s (잔액: %,d원)\n", (i + 1), a.getName(), a.getBalance());
+				System.out.printf("%-4d %-15s %,d원\n", (i + 1), a.getName(), a.getBalance());
 			}
+			System.out.println("--------------------------------------------------");
+			System.out.print("👉 번호 선택 (0: 전체/취소): ");
 			try {
-				int choice = Integer.parseInt(scanner.nextLine());
-				if (choice == 0) {
-					return null;
-				}
-				if (choice > 0 && choice <= assets.size()) {
-					return assets.get(choice - 1);
-				}
+				int choice = Integer.parseInt(scanner.nextLine().trim());
+				if (choice == 0) return null;
+				if (choice > 0 && choice <= assets.size()) return assets.get(choice - 1);
 				System.out.println("❌ 잘못된 번호입니다.");
 			} catch (NumberFormatException e) {
 				System.out.println("❌ 숫자로 입력해야 합니다.");
@@ -273,79 +271,92 @@ public class TransactionController {
 	}
 
 	private void displayTransactions(List<Transaction> transactions) {
-		System.out.println("\n--- 🧾 거래 기록 조회 결과 ---");
+		System.out.println("\n[🧾 거래 기록 조회 결과]");
 		if (transactions.isEmpty()) {
 			System.out.println("⚠️ 조건에 맞는 거래 기록이 없습니다.");
 			return;
 		}
 
-		System.out.printf("%-4s %-12s | %-8s | %-12s | %-12s | %-12s | %-15s | %s\n", "번호", "날짜", "유형", "카테고리", "출금 자산",
-				"입금 자산", "금액", "메모");
-		System.out.println(
-				"----------------------------------------------------------------------------------------------------------");
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		System.out.printf("%-4s %-12s | %-8s | %-10s | %-12s | %-12s | %-13s | %s\n",
+				"번호", "날짜", "유형", "카테고리", "출금 자산", "입금 자산", "금액", "메모");
+		System.out.println("------------------------------------------------------------------------------");
+
 		long totalAmount = 0;
 		for (int i = 0; i < transactions.size(); i++) {
 			Transaction tx = transactions.get(i);
-			String categoryName = categoryService.findById(currentUser, tx.getCategoryId()).map(Category::getName)
-					.orElse("N/A");
+			String categoryName = categoryService.findById(currentUser, tx.getCategoryId())
+					.map(Category::getName).orElse("N/A");
 
 			String fromAssetName = "";
 			String toAssetName = "";
 			CategoryKind type = tx.getType();
 
 			if (type == CategoryKind.INCOME) {
-				toAssetName = assetService.findById(currentUser, tx.getAssetId()).map(Asset::getName).orElse("N/A");
+				toAssetName = assetService.findById(currentUser, tx.getAssetId())
+						.map(Asset::getName).orElse("N/A");
 				totalAmount += tx.getAmount();
 			} else if (type == CategoryKind.EXPENSE) {
-				fromAssetName = assetService.findById(currentUser, tx.getAssetId()).map(Asset::getName).orElse("N/A");
+				fromAssetName = assetService.findById(currentUser, tx.getAssetId())
+						.map(Asset::getName).orElse("N/A");
 				totalAmount -= tx.getAmount();
 			} else if (type == CategoryKind.TRANSFER) {
-				fromAssetName = assetService.findById(currentUser, tx.getAssetId()).map(Asset::getName).orElse("N/A");
-				toAssetName = assetService.findById(currentUser, tx.getToAssetId()).map(Asset::getName).orElse("N/A");
+				fromAssetName = assetService.findById(currentUser, tx.getAssetId())
+						.map(Asset::getName).orElse("N/A");
+				toAssetName = assetService.findById(currentUser, tx.getToAssetId())
+						.map(Asset::getName).orElse("N/A");
 			}
 
-			System.out.printf("%-4d %-12s | %-8s | %-12s | %-12s | %-12s | %,15d원 | %s\n", (i + 1),
-					tx.getDateTime().toLocalDate(), tx.getType().name(), categoryName, fromAssetName, toAssetName,
-					tx.getAmount(), tx.getMemo());
+			System.out.printf("%-4d %-12s | %-8s | %-10s | %-12s | %-12s | %,11d원 | %s\n",
+					(i + 1),
+					tx.getDateTime().toLocalDate(),
+					tx.getType().name(),
+					categoryName,
+					fromAssetName,
+					toAssetName,
+					tx.getAmount(),
+					tx.getMemo());
 		}
-		System.out.println(
-				"----------------------------------------------------------------------------------------------------------");
-		System.out.printf("조회된 기록 자산 변동 합계: %,65d원\n", totalAmount);
+		System.out.println("------------------------------------------------------------------------------");
+		System.out.printf("조회된 기록 자산 변동 합계: %,d원\n", totalAmount);
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 	}
 
 	private Category selectCategory(Users user, String type) {
 		List<Category> allCategories = categoryService.getSortedCategories(user);
 
-		List<Category> filteredCategories;
+		List<Category> filtered;
 		if (type == null) {
-			filteredCategories = allCategories;
+			filtered = allCategories;
 		} else {
-			filteredCategories = allCategories.stream().filter(c -> c.getCategory().name().equals(type))
-					.collect(Collectors.toList());
-		}
-		System.out.println("결과: 총 " + filteredCategories.size() + "개의 카테고리를 찾았습니다.");
-		for (Category c : filteredCategories) {
-			System.out.printf("- 이름: %s, 타입: %s\n", c.getName(), c.getCategory().name());
+			filtered = allCategories.stream()
+					.filter(c -> c.getCategory().name().equals(type))
+					.toList();
 		}
 
-		if (filteredCategories.isEmpty()) {
-			System.out.printf("❌ 먼저 '%s' 타입의 카테고리를 등록해야 합니다.\n", type == null ? "일반" : type);
+		String displayType = (type == null) ? "전체" : type;
+		if (filtered.isEmpty()) {
+			System.out.printf("❌ 먼저 '%s' 타입의 카테고리를 등록해야 합니다.\n", displayType);
 			return null;
 		}
 
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		System.out.printf("[📂 %s 카테고리 선택]\n", displayType);
+		System.out.println("번호  이름              종류");
+		System.out.println("--------------------------------------------------");
+		for (int i = 0; i < filtered.size(); i++) {
+			Category c = filtered.get(i);
+			System.out.printf("%-4d %-16s %-10s\n", (i + 1), c.getName(), c.getCategory().name());
+		}
+		System.out.println("--------------------------------------------------");
+
 		while (true) {
-			String displayType = (type == null) ? "전체" : type;
-			System.out.printf("'%s' 카테고리 번호를 선택하세요 (0: 취소):\n", displayType);
-			for (int i = 0; i < filteredCategories.size(); i++) {
-				System.out.printf("%d. %s\n", (i + 1), filteredCategories.get(i).getName());
-			}
+			System.out.print("👉 번호 선택 (0: 전체/취소): ");
 			try {
-				int choice = Integer.parseInt(scanner.nextLine());
-				if (choice == 0) {
-					return null;
-				}
-				if (choice > 0 && choice <= filteredCategories.size()) {
-					return filteredCategories.get(choice - 1);
+				int choice = Integer.parseInt(scanner.nextLine().trim());
+				if (choice == 0) return null;
+				if (choice > 0 && choice <= filtered.size()) {
+					return filtered.get(choice - 1);
 				}
 				System.out.println("❌ 잘못된 번호입니다.");
 			} catch (NumberFormatException e) {

@@ -2,7 +2,6 @@ package controller;
 
 import java.util.List;
 import java.util.Scanner;
-import java.util.UUID;
 
 import domain.Category;
 import enums.CategoryKind;
@@ -15,14 +14,12 @@ public class CategoryController {
 	private final CategoryService categoryService;
 	private Users currentUser;
 
-	// 간소 생성자 - 기본 레포를 내부에서 생성
-	public CategoryController(Scanner scanner, Users user) {
-		this.scanner = scanner;
-		this.currentUser = user;
-		this.categoryService = new CategoryService();
+	// 간소 생성자
+	public CategoryController(Scanner scanner, Users currentUser) {
+		this(scanner, currentUser, new CategoryService());
 	}
 
-	// 기본 생성자 - 외부에서 레포 전달(교체 용이)
+	// 기존 주입용 생성자도 유지
 	public CategoryController(Scanner scanner, Users currentUser, CategoryService categoryService) {
 		this.scanner = scanner;
 		this.currentUser = currentUser;
@@ -31,180 +28,145 @@ public class CategoryController {
 
 	public void mainMenu() {
 		while (true) {
-			System.out.println("\n=============== 카테고리 관리 ===============");
-			System.out.println("1. 카테고리 등록");
-			System.out.println("2. 카테고리 수정");
-			System.out.println("3. 카테고리 삭제");
-			System.out.println("4. 카테고리 전체 조회");
-			System.out.println("0. 메인 메뉴로 돌아가기");
-			System.out.println("--------------------------------------------");
-			System.out.print("원하는 작업의 번호를 입력하세요: ");
+			System.out.println("\n================= 📁 카테고리 관리 =================");
+			System.out.println("1. ➕ 카테고리 등록");
+			System.out.println("2. 📝 카테고리 수정");
+			System.out.println("3. 🗑️ 카테고리 삭제");
+			System.out.println("4. 📋 카테고리 전체 조회");
+			System.out.println("0. 🔙 메인 메뉴로 돌아가기");
+			System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+			System.out.print("👉 선택: ");
+			String input = scanner.nextLine().trim();
 
-			String choice = scanner.nextLine();
-
-			switch (choice) {
-			case "1" -> registerCategory();
-			case "2" -> updateCategory();
-			case "3" -> deleteCategory();
-			case "4" -> viewAllCategories();
-			case "0" -> {
-				System.out.println("메인 메뉴로 돌아갑니다.");
-				return;
-			}
-			default -> System.out.println("❌ 잘못된 입력입니다. 메뉴에 있는 번호를 입력해주세요.");
+			switch (input) {
+				case "1" -> registerCategory();
+				case "2" -> updateCategory();
+				case "3" -> deleteCategory();
+				case "4" -> viewAllCategories();
+				case "0" -> {
+					System.out.println("\n🔙 메인 메뉴로 돌아갑니다.");
+					return;
+				}
+				default -> System.out.println("\n❗ 올바른 번호를 입력해주세요.");
 			}
 		}
 	}
 
 	private void registerCategory() {
-		System.out.println("\n--- 카테고리 등록 ---");
-		System.out.print("등록할 카테고리 이름을 입력하세요: ");
-		String name = scanner.nextLine();
+		System.out.println("\n[➕ 카테고리 등록]");
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		System.out.print("👉 이름: ");
+		String name = scanner.nextLine().trim();
 
-		CategoryKind type;
-		while (true) {
-			System.out.print("카테고리 종류를 선택하세요 (1: 수입, 2: 지출, 3: 이체): ");
-			String typeChoice = scanner.nextLine();
-			if (typeChoice.equals("1")) {
-				type = CategoryKind.INCOME;
-				break;
-			} else if (typeChoice.equals("2")) {
-				type = CategoryKind.EXPENSE;
-				break;
-			} else if (typeChoice.equals("3")) {
-				type = CategoryKind.TRANSFER;
-				break;
-			} else {
-				System.out.println("❌ 잘못된 선택입니다. 1, 2, 3 중에서 선택해주세요.");
+		System.out.println("👉 종류 선택: (1) 수입  (2) 지출  (3) 이체");
+		System.out.print("👉 선택: ");
+		String typeInput = scanner.nextLine().trim();
+
+		CategoryKind kind;
+		switch (typeInput) {
+			case "1" -> kind = CategoryKind.INCOME;
+			case "2" -> kind = CategoryKind.EXPENSE;
+			case "3" -> kind = CategoryKind.TRANSFER;
+			default -> {
+				System.out.println("❌ 잘못된 입력입니다.");
+				return;
 			}
 		}
 
-		String result = categoryService.registerCategory(currentUser, name, type);
-		System.out.println(result);
+		String result = categoryService.registerCategory(currentUser, name, kind);
+		System.out.println("\n" + result);
 	}
 
 	private void updateCategory() {
-		while (true) {
-			System.out.println("\n=============== 카테고리 수정 ===============");
-			List<Category> categories = categoryService.getSortedCategories(currentUser);
-			if (displayCategoryList(categories)) {
-				return;
-			}
-
-			System.out.print("수정할 카테고리 번호를 입력하세요 (뒤로가기: 0): ");
-			int choice = getIntegerInput();
-			if (choice == -1) {
-				continue;
-			}
-			if (choice == 0) {
-				return;
-			}
-
-			if (isInvalidChoice(choice, categories.size())) {
-				continue;
-			}
-
-			Category selectedCategory = categories.get(choice - 1);
-
-			UUID categoryId = selectedCategory.getId();
-
-			System.out.println("\n선택한 카테고리: " + selectedCategory.getName());
-			System.out.print("새 카테고리명을 입력하세요: ");
-			String newName = scanner.nextLine();
-
-			String resultMessage = categoryService.updateCategoryName(currentUser, categoryId, newName);
-			System.out.println("\n" + resultMessage);
-
-			if (!askToContinue("계속 수정하시겠습니까?")) {
-				return;
-			}
+		List<Category> list = categoryService.getSortedCategories(currentUser);
+		if (list.isEmpty()) {
+			System.out.println("\n⚠️ 수정할 카테고리가 없습니다.");
+			return;
 		}
+
+		System.out.println("\n[📝 카테고리 수정]");
+		printCategoryTable(list);
+
+		System.out.print("👉 수정할 번호 입력 (0: 취소): ");
+		int idx;
+		try {
+			idx = Integer.parseInt(scanner.nextLine().trim());
+		} catch (NumberFormatException e) {
+			System.out.println("❌ 숫자를 입력해주세요.");
+			return;
+		}
+		if (idx == 0) return;
+		if (idx < 1 || idx > list.size()) {
+			System.out.println("❌ 잘못된 번호입니다.");
+			return;
+		}
+
+		Category selected = list.get(idx - 1);
+		System.out.println("\n선택한 카테고리: " + selected.getName());
+		System.out.print("👉 새 이름: ");
+		String newName = scanner.nextLine().trim();
+		if (newName.isEmpty()) {
+			System.out.println("🚫 변경이 취소되었습니다.");
+			return;
+		}
+		String result = categoryService.updateCategoryName(currentUser, selected.getId(), newName);
+		System.out.println("\n" + result);
 	}
 
 	private void deleteCategory() {
-		while (true) {
-			System.out.println("\n=============== 카테고리 삭제 ===============");
-			List<Category> categories = categoryService.getSortedCategories(currentUser);
-			if (displayCategoryList(categories)) {
-				return;
-			}
-
-			System.out.print("삭제할 카테고리 번호를 입력하세요 (뒤로가기: 0): ");
-			int choice = getIntegerInput();
-			if (choice == -1) {
-				continue;
-			}
-			if (choice == 0) {
-				return;
-			}
-
-			if (isInvalidChoice(choice, categories.size())) {
-				continue;
-			}
-
-			Category selectedCategory = categories.get(choice - 1);
-			System.out.printf("'%s' 카테고리를 정말 삭제하시겠습니까? (Y/N): ", selectedCategory.getName());
-			String confirm = scanner.nextLine();
-
-			if (confirm.equalsIgnoreCase("Y")) {
-				String resultMessage = categoryService.deleteCategory(currentUser, selectedCategory.getId());
-				System.out.println(resultMessage);
-			} else {
-				System.out.println("삭제가 취소되었습니다.");
-			}
-
-			if (!askToContinue("계속 삭제하시겠습니까?")) {
-				return;
-			}
+		List<Category> list = categoryService.getSortedCategories(currentUser);
+		if (list.isEmpty()) {
+			System.out.println("\n⚠️ 삭제할 카테고리가 없습니다.");
+			return;
 		}
+
+		System.out.println("\n[🗑️ 카테고리 삭제]");
+		printCategoryTable(list);
+
+		System.out.print("👉 삭제할 번호 입력 (0: 취소): ");
+		int idx;
+		try {
+			idx = Integer.parseInt(scanner.nextLine().trim());
+		} catch (NumberFormatException e) {
+			System.out.println("❌ 숫자를 입력해주세요.");
+			return;
+		}
+		if (idx == 0) return;
+		if (idx < 1 || idx > list.size()) {
+			System.out.println("❌ 잘못된 번호입니다.");
+			return;
+		}
+
+		Category selected = list.get(idx - 1);
+		System.out.print("정말 '" + selected.getName() + "'을(를) 삭제하시겠습니까? (Y/N): ");
+		String confirm = scanner.nextLine().trim().toLowerCase();
+		if (!confirm.equals("y")) {
+			System.out.println("🚫 삭제가 취소되었습니다.");
+			return;
+		}
+
+		String result = categoryService.deleteCategory(currentUser, selected.getId());
+		System.out.println("\n" + result);
 	}
 
 	private void viewAllCategories() {
-		System.out.println("\n--- 카테고리 전체 조회 ---");
-		List<Category> categories = categoryService.getSortedCategories(currentUser);
-		if (categories.isEmpty()) {
-			System.out.println("등록된 카테고리가 없습니다.");
+		List<Category> list = categoryService.getSortedCategories(currentUser);
+		System.out.println("\n[📋 카테고리 전체 조회]");
+		if (list.isEmpty()) {
+			System.out.println("⚠️ 등록된 카테고리가 없습니다.");
 			return;
 		}
-		for (Category c : categories) {
-			System.out.printf("이름: %-10s | 종류: %s\n", c.getName(), c.getCategory());
-		}
+		printCategoryTable(list);
 	}
 
-	private boolean displayCategoryList(List<Category> categories) {
-		if (categories.isEmpty()) {
-			System.out.println("현재 등록된 카테고리가 없습니다.");
-			return true;
+	private void printCategoryTable(List<Category> list) {
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		System.out.printf("%-4s %-16s %-10s\n", "번호", "이름", "종류");
+		System.out.println("--------------------------------------------------");
+		int i = 1;
+		for (Category c : list) {
+			System.out.printf("%-4d %-16s %-10s\n", i++, c.getName(), c.getCategory().name());
 		}
-		System.out.println("현재 등록된 카테고리:");
-		for (int i = 0; i < categories.size(); i++) {
-			Category c = categories.get(i);
-			System.out.printf("%d. %-10s [%s]\n", (i + 1), c.getName(), c.getCategory());
-		}
-		System.out.println("--------------------------------------------");
-		return false;
-	}
-
-	private int getIntegerInput() {
-		try {
-			return Integer.parseInt(scanner.nextLine());
-		} catch (NumberFormatException e) {
-			System.out.println("❌ 잘못된 입력입니다. 숫자를 입력해주세요.");
-			return -1;
-		}
-	}
-
-	private boolean isInvalidChoice(int choice, int listSize) {
-		if (choice < 1 || choice > listSize) {
-			System.out.println("❌ 목록에 없는 번호입니다. 다시 입력해주세요.");
-			return true;
-		}
-		return false;
-	}
-
-	private boolean askToContinue(String prompt) {
-		System.out.printf("%s (Y/N): ", prompt);
-		String answer = scanner.nextLine();
-		return answer.equalsIgnoreCase("Y");
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 	}
 }

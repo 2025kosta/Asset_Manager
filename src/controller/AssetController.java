@@ -159,19 +159,27 @@ public class AssetController {
 
 		if (assets.isEmpty()) {
 			System.out.println("⚠️ 등록된 자산이 없습니다.");
-		} else {
-			long total = 0;
-			int idx = 1;
-			System.out.printf("%-4s %-10s %-10s %-15s\n", "번호", "자산명", "유형", "잔액");
-			System.out.println("-----------------------------------------------------------------------------------");
-			for (Asset a : assets) {
-				System.out.printf("%-4d %-10s %-10s %,15d원\n", idx++, a.getName(), a.getType(), a.getBalance());
-				total += a.getBalance();
-			}
-			System.out.println("-----------------------------------------------------------------------------------");
-			System.out.printf("총 자산 합계: %,15d원\n", total);
+			System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+			return;
 		}
 
+		final String H = "%-4s %-14s %-10s %16s%n";
+		final String R = "%-4d %-14s %-10s %,16d원%n";
+		final String LINE = "--------------------------------------------------------------";
+
+		long total = 0;
+
+		System.out.printf(H, "번호", "자산명", "유형", "잔액");
+		System.out.println(LINE);
+
+		int idx = 1;
+		for (Asset a : assets) {
+			System.out.printf(R, idx++, a.getName(), a.getType(), a.getBalance());
+			total += a.getBalance();
+		}
+
+		System.out.println(LINE);
+		System.out.printf("%-4s %-14s %-10s %,16d원%n", "", "", "총 합계", total);
 		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 	}
 }
