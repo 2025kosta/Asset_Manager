@@ -163,6 +163,7 @@ public class TransactionController {
 
 	private void deleteTransaction() {
 		System.out.println("\n[🗑️ 거래 기록 삭제]");
+
 		List<Transaction> transactions = transactionService.searchTransactions(
 				currentUser, null, null, null, null, null, null
 		);
@@ -171,22 +172,42 @@ public class TransactionController {
 			return;
 		}
 
-		// 간단 리스트(번호/타입/메모/금액/날짜)
+		final int idxW = 4, typeW = 8, amtW = 10, catW = 10, fromW = 10, toW = 10, dateW = 10;
+		final String H = "%-" + idxW + "s %-" + typeW + "s %" + amtW + "s %-" + catW + "s %-" + fromW + "s %-" + toW + "s %-" + dateW + "s%n";
+		final String R = "%-" + idxW + "d %-" + typeW + "s %" + amtW + "s %-" + catW + "s %-" + fromW + "s %-" + toW + "s %-" + dateW + "s%n";
+		final String LINE = "--------------------------------------------------------------------------------";
+
 		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		System.out.printf(H, "번호", "유형", "금액", "카테고리", "출금 자산", "입금 자산", "날짜");
+		System.out.println(LINE);
+
 		for (int i = 0; i < transactions.size(); i++) {
 			Transaction t = transactions.get(i);
-			System.out.printf(
-					"%-3d [%s] %-10s | %,d원 | %s\n",
-					(i + 1),
-					t.getType().name(),
-					t.getMemo(),
-					t.getAmount(),
-					t.getDateTime().toLocalDate()
-			);
-		}
-		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-		System.out.print("👉 삭제할 번호 입력 (0: 취소): ");
 
+			String categoryName = categoryService.findById(currentUser, t.getCategoryId())
+					.map(Category::getName).orElse("");
+
+			String fromAssetName = "";
+			String toAssetName   = "";
+			if (t.getType() == CategoryKind.INCOME) {
+				toAssetName = assetService.findById(currentUser, t.getAssetId()).map(Asset::getName).orElse("");
+			} else if (t.getType() == CategoryKind.EXPENSE) {
+				fromAssetName = assetService.findById(currentUser, t.getAssetId()).map(Asset::getName).orElse("");
+			} else { // TRANSFER
+				fromAssetName = assetService.findById(currentUser, t.getAssetId()).map(Asset::getName).orElse("");
+				toAssetName   = assetService.findById(currentUser, t.getToAssetId()).map(Asset::getName).orElse("");
+			}
+
+			String amtStr = String.format("%,d원", t.getAmount());
+			String dateStr = t.getDateTime().toLocalDate().toString();
+
+			System.out.printf(R, (i + 1), t.getType().name(), amtStr, categoryName, fromAssetName, toAssetName, dateStr);
+		}
+
+		System.out.println(LINE);
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+		System.out.print("👉 삭제할 번호 입력 (0: 취소): ");
 		try {
 			int choice = Integer.parseInt(scanner.nextLine().trim());
 			if (choice == 0) return;
@@ -194,7 +215,16 @@ public class TransactionController {
 				System.out.println("❌ 잘못된 번호입니다.");
 				return;
 			}
+
 			Transaction selectedTx = transactions.get(choice - 1);
+
+			System.out.print("정말 삭제하시겠습니까? (Y/N): ");
+			String confirm = scanner.nextLine().trim().toLowerCase();
+			if (!confirm.equals("y")) {
+				System.out.println("🚫 삭제가 취소되었습니다.");
+				return;
+			}
+
 			String result = transactionService.deleteTransaction(currentUser, selectedTx.getId());
 			System.out.println("\n" + result);
 		} catch (NumberFormatException e) {
@@ -215,11 +245,11 @@ public class TransactionController {
 			String endStr = scanner.nextLine().trim();
 			LocalDate endDate = endStr.isBlank() ? null : LocalDate.parse(endStr);
 
-			System.out.println("\n--- 💼 자산 선택 (0: 전체) ---");
+			System.out.println("\n--- 💼 자산 선택 ---");
 			Asset asset = selectAsset(currentUser); // 0 입력 시 null 반환 → 전체
 			UUID assetId = (asset != null) ? asset.getId() : null;
 
-			System.out.println("\n--- 📂 카테고리 선택 (0: 전체) ---");
+			System.out.println("\n--- 📂 카테고리 선택 ---");
 			Category category = selectCategory(currentUser, null); // 0 입력 시 null 반환 → 전체
 			UUID categoryId = (category != null) ? category.getId() : null;
 
@@ -258,7 +288,7 @@ public class TransactionController {
 				System.out.printf("%-4d %-15s %,d원\n", (i + 1), a.getName(), a.getBalance());
 			}
 			System.out.println("--------------------------------------------------");
-			System.out.print("👉 번호 선택 (0: 전체/취소): ");
+			System.out.print("👉 번호 선택 (0: 취소): ");
 			try {
 				int choice = Integer.parseInt(scanner.nextLine().trim());
 				if (choice == 0) return null;
@@ -277,49 +307,56 @@ public class TransactionController {
 			return;
 		}
 
-		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
-		System.out.printf("%-4s %-12s | %-8s | %-10s | %-12s | %-12s | %-13s | %s\n",
-				"번호", "날짜", "유형", "카테고리", "출금 자산", "입금 자산", "금액", "메모");
-		System.out.println("------------------------------------------------------------------------------");
+		final String H    = "%-4s %-12s %-8s %-10s %-12s %-12s %12s %s%n";
+		final String ROW  = "%-4d %-12s %-8s %-10s %-12s %-12s %,12d원 %s%n";
+		final String LINE = "--------------------------------------------------------------------------------";
+
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		System.out.printf(H, "번호", "날짜", "유형", "카테고리", "출금 자산", "입금 자산", "금액", "메모");
+		System.out.println(LINE);
 
 		long totalAmount = 0;
+
 		for (int i = 0; i < transactions.size(); i++) {
 			Transaction tx = transactions.get(i);
+
 			String categoryName = categoryService.findById(currentUser, tx.getCategoryId())
-					.map(Category::getName).orElse("N/A");
+					.map(Category::getName).orElse("");
 
 			String fromAssetName = "";
-			String toAssetName = "";
-			CategoryKind type = tx.getType();
+			String toAssetName   = "";
 
-			if (type == CategoryKind.INCOME) {
+			if (tx.getType() == CategoryKind.INCOME) {
 				toAssetName = assetService.findById(currentUser, tx.getAssetId())
-						.map(Asset::getName).orElse("N/A");
+						.map(Asset::getName).orElse("");
 				totalAmount += tx.getAmount();
-			} else if (type == CategoryKind.EXPENSE) {
+			} else if (tx.getType() == CategoryKind.EXPENSE) {
 				fromAssetName = assetService.findById(currentUser, tx.getAssetId())
-						.map(Asset::getName).orElse("N/A");
+						.map(Asset::getName).orElse("");
 				totalAmount -= tx.getAmount();
-			} else if (type == CategoryKind.TRANSFER) {
+			} else { // TRANSFER
 				fromAssetName = assetService.findById(currentUser, tx.getAssetId())
-						.map(Asset::getName).orElse("N/A");
+						.map(Asset::getName).orElse("");
 				toAssetName = assetService.findById(currentUser, tx.getToAssetId())
-						.map(Asset::getName).orElse("N/A");
+						.map(Asset::getName).orElse("");
 			}
 
-			System.out.printf("%-4d %-12s | %-8s | %-10s | %-12s | %-12s | %,11d원 | %s\n",
+			System.out.printf(
+					ROW,
 					(i + 1),
-					tx.getDateTime().toLocalDate(),
+					tx.getDateTime().toLocalDate().toString(),
 					tx.getType().name(),
 					categoryName,
 					fromAssetName,
 					toAssetName,
 					tx.getAmount(),
-					tx.getMemo());
+					tx.getMemo()
+			);
 		}
-		System.out.println("------------------------------------------------------------------------------");
-		System.out.printf("조회된 기록 자산 변동 합계: %,d원\n", totalAmount);
-		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
+		System.out.println(LINE);
+		System.out.printf("자산 변동 합계: %,d원%n", totalAmount);
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 	}
 
 	private Category selectCategory(Users user, String type) {
@@ -351,7 +388,7 @@ public class TransactionController {
 		System.out.println("--------------------------------------------------");
 
 		while (true) {
-			System.out.print("👉 번호 선택 (0: 전체/취소): ");
+			System.out.print("👉 번호 선택 (0: 취소): ");
 			try {
 				int choice = Integer.parseInt(scanner.nextLine().trim());
 				if (choice == 0) return null;

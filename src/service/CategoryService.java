@@ -30,7 +30,7 @@ public class CategoryService {
 	public String registerCategory(Users user, String name, CategoryKind ck) {
 		if (categoryRepository.findByType(user, name, ck).isPresent()) return "❌ 이미 존재하는 카테고리입니다.";
 		Category saved = categoryRepository.save(new Category(user, name, ck));
-		return String.format("✅ 카테고리가 등록되었습니다. (이름: %s, 종류: %s)", saved.getName(), saved.getCategory());
+		return String.format("✅ 카테고리가 등록되었습니다.", saved.getName(), saved.getCategory());
 	}
 	public Optional<Category> findById(Users user, UUID id) { return categoryRepository.findById(id, user); }
 	public String updateCategoryName(Users user, UUID id, String newName) {
@@ -40,7 +40,7 @@ public class CategoryService {
 		if (!c.getUsers().getId().equals(user.getId())) return "❌ 해당 카테고리를 찾을 수 없습니다.";
 		c.setName(newName);
 		categoryRepository.save(c);
-		return String.format("✅ 카테고리 이름이 수정되었습니다. (이름: %s)", c.getName());
+		return String.format("✅ 카테고리 이름이 수정되었습니다.", c.getName());
 	}
 	public String deleteCategory(Users user, UUID id) {
 		if (categoryRepository.findById(id, user).isEmpty()) return "❌ 해당 카테고리를 찾을 수 없습니다.";

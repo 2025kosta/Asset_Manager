@@ -64,7 +64,7 @@ public class AssetController {
 		Set<String> existingTypes = existing.stream().map(Asset::getType).collect(Collectors.toSet());
 
 		if (existingTypes.isEmpty()) {
-			System.out.println("💡 기본 제공 자산 유형: 현금, 계좌, 카드, 주식, 대출");
+			System.out.println("💡 추천 자산 유형: 현금, 계좌, 카드, 주식, 대출");
 		} else {
 			System.out.println("💡 현재 보유한 자산 유형: " + String.join(", ", existingTypes));
 		}
@@ -95,15 +95,18 @@ public class AssetController {
 		}
 		viewAssets();
 
-		System.out.print("👉 수정할 자산 번호 입력: ");
+		System.out.print("👉 수정할 번호 입력 (0: 취소): ");
 		int index;
 		try {
-			index = Integer.parseInt(scanner.nextLine()) - 1; // 1-based → 0-based
+			index = Integer.parseInt(scanner.nextLine().trim()) - 1; // 1-based → 0-based
 		} catch (NumberFormatException e) {
 			System.out.println("❌ 숫자를 입력해주세요.");
 			return;
 		}
 
+		if (index == -1) { // 사용자가 0 입력
+			return; // 조용히 취소 (카테고리와 동일 톤)
+		}
 		if (index < 0 || index >= assets.size()) {
 			System.out.println("❌ 잘못된 번호입니다.");
 			return;
@@ -131,23 +134,33 @@ public class AssetController {
 		}
 		viewAssets();
 
-		System.out.print("👉 삭제할 자산 번호 입력: ");
+		System.out.print("👉 삭제할 번호 입력 (0: 취소): ");
 		int index;
 		try {
-			index = Integer.parseInt(scanner.nextLine()) - 1; // 1-based → 0-based
+			index = Integer.parseInt(scanner.nextLine().trim()) - 1; // 1-based → 0-based
 		} catch (NumberFormatException e) {
 			System.out.println("❌ 숫자를 입력해주세요.");
 			return;
 		}
 
+		if (index == -1) {
+			return;
+		}
 		if (index < 0 || index >= assets.size()) {
 			System.out.println("❌ 잘못된 번호입니다.");
 			return;
 		}
 
-		UUID assetId = assets.get(index).getId();
+		Asset target = assets.get(index);
 
-		String result = assetService.deleteAsset(currentUser, assetId);
+		System.out.print("정말 '" + target.getName() + "' 자산을 삭제하시겠습니까? (Y/N): ");
+		String confirm = scanner.nextLine().trim().toLowerCase();
+		if (!confirm.equals("y")) {
+			System.out.println("🚫 삭제가 취소되었습니다.");
+			return;
+		}
+
+		String result = assetService.deleteAsset(currentUser, target.getId());
 		System.out.println("\n" + result);
 	}
 
@@ -179,7 +192,8 @@ public class AssetController {
 		}
 
 		System.out.println(LINE);
-		System.out.printf("%-4s %-14s %-10s %,16d원%n", "", "", "총 합계", total);
+		System.out.printf("총 합계: %,d원%n", total);
 		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+
 	}
 }

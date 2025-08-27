@@ -102,13 +102,13 @@ public class CategoryController {
 		}
 
 		Category selected = list.get(idx - 1);
-		System.out.println("\n선택한 카테고리: " + selected.getName());
-		System.out.print("👉 새 이름: ");
+		System.out.print("👉 새 이름 (변경 없으면 Enter): ");
 		String newName = scanner.nextLine().trim();
 		if (newName.isEmpty()) {
 			System.out.println("🚫 변경이 취소되었습니다.");
 			return;
 		}
+
 		String result = categoryService.updateCategoryName(currentUser, selected.getId(), newName);
 		System.out.println("\n" + result);
 	}
