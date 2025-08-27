@@ -10,8 +10,8 @@ public class UserService {
 	private static final Pattern EMAIL_PATTERN = Pattern.compile("^[\\w._%+-]+@[\\w.-]+\\.[a-zA-Z]{2,}$");
 	private static final Pattern NAME_PATTERN = Pattern.compile("^[가-힣a-zA-Z]{2,20}$");
 
-	public UserService() {
-		this.userRepository = new UserRepository();
+	public UserService(UserRepository userRepository) {
+		this.userRepository = userRepository;
 	}
 
 	public String createUser(String name, String email) {

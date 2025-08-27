@@ -15,9 +15,9 @@ public class AssetController {
 	private final AssetService assetService;
 	private Users currentUser;
 
-	public AssetController(Scanner scanner) {
+	public AssetController(Scanner scanner, AssetService assetService) {
 		this.scanner = scanner;
-		this.assetService = new AssetService();
+		this.assetService = assetService;
 	}
 
 	public void setCurrentUser(Users user) {
