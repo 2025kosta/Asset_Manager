@@ -9,6 +9,14 @@ import service.TransactionService;
 import service.UserService;
 
 public class UserController {
+
+	private static final String SEP = "━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━";
+	private static final String MSG_WELCOME_PREFIX = "\n✅ 환영합니다, ";
+	private static final String MSG_WELCOME_SUFFIX = "님!";
+	private static final String MSG_NO_LOGIN = "❌ 로그인된 사용자가 없습니다.";
+	private static final String MSG_DELETE_CANCELLED = "🚫 사용자 삭제가 취소되었습니다.";
+	private static final String MSG_ALL_DELETED = "\n✅ 사용자 및 연결된 모든 데이터가 삭제되었습니다.";
+
 	private final Scanner scanner;
 	private final UserService userService;
 	private final AssetService assetService;
@@ -39,12 +47,12 @@ public class UserController {
 
 	public void createUser() {
 		System.out.println("\n[🔷 사용자 생성]");
-		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		System.out.println(SEP);
 		System.out.print("👉 이름: ");
 		String name = scanner.nextLine();
 		System.out.print("👉 이메일: ");
 		String email = scanner.nextLine();
-		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		System.out.println(SEP);
 
 		String resultMsg = userService.createUser(name, email);
 		System.out.println("\n" + resultMsg);
@@ -56,10 +64,10 @@ public class UserController {
 
 	public boolean login() {
 		System.out.println("\n[🔐 로그인]");
-		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		System.out.println(SEP);
 		System.out.print("👉 이메일: ");
 		String email = scanner.nextLine();
-		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		System.out.println(SEP);
 
 		Users user = userService.findByEmail(email);
 
@@ -69,34 +77,34 @@ public class UserController {
 		}
 
 		currentUser = user;
-		System.out.println("\n✅ 환영합니다, " + user.getName() + "님!");
+		System.out.println(MSG_WELCOME_PREFIX + user.getName() + MSG_WELCOME_SUFFIX);
 		return true;
 	}
 
 	public boolean deleteCurrentUser() {
 		System.out.println("\n[🗑️ 사용자 삭제]");
-		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		System.out.println(SEP);
 
 		if (currentUser == null) {
-			System.out.println("❌ 로그인된 사용자가 없습니다.");
+			System.out.println(MSG_NO_LOGIN);
 			return false;
 		}
 
 		System.out.print("정말로 삭제하시겠습니까? (Y/N): ");
 		String confirm = scanner.nextLine().trim().toLowerCase();
 		if (!confirm.equals("y")) {
-			System.out.println("🚫 사용자 삭제가 취소되었습니다.");
+			System.out.println(MSG_DELETE_CANCELLED);
 			return false;
 		}
 
-		// ✅ 순서: 거래 → 자산 → 카테고리 → 사용자
+		// 순서: 거래 → 자산 → 카테고리 → 사용자
 		transactionService.deleteAllByUser(currentUser);
 		assetService.deleteAllByUser(currentUser);
 		categoryService.deleteAllByUser(currentUser);
 		userService.deleteUser(currentUser);
 		currentUser = null;
 
-		System.out.println("\n✅ 사용자 및 연결된 모든 데이터가 삭제되었습니다.");
+		System.out.println(MSG_ALL_DELETED);
 		return true;
 	}
 
