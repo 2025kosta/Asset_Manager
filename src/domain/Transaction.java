@@ -1,7 +1,10 @@
 package domain;
 
+import enums.CategoryKind;
+
 import java.time.LocalDateTime;
 import java.util.UUID;
+
 
 public class Transaction {
 	private UUID id;

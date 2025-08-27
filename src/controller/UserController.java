@@ -5,6 +5,7 @@ import java.util.Scanner;
 import domain.Users;
 import service.AssetService;
 import service.CategoryService;
+import service.TransactionService;
 import service.UserService;
 
 public class UserController {
@@ -13,13 +14,27 @@ public class UserController {
 	private final AssetService assetService;
 	private Users currentUser;
 	private final CategoryService categoryService;
+	private final TransactionService transactionService;
 
-	public UserController(Scanner scanner, UserService userService, AssetService assetService,
-			CategoryService categoryService) {
+	// 간소 생성사 - 기본 레포를 내부에서 생성
+	public UserController(Scanner scanner) {
+		this.scanner = scanner;
+		this.userService = new UserService();
+		this.assetService = new AssetService();
+		this.categoryService = new CategoryService();
+		this.transactionService = new TransactionService();
+	}
+
+	// 기본 생성자 - 외부에서 레포 주입(교체 용이)
+	public UserController(Scanner scanner, UserService userService,
+						  AssetService assetService,
+						  CategoryService categoryService,
+						  TransactionService transactionService) {
 		this.scanner = scanner;
 		this.userService = userService;
 		this.assetService = assetService;
 		this.categoryService = categoryService;
+		this.transactionService = transactionService;
 	}
 
 	public void createUser() {
@@ -36,7 +51,6 @@ public class UserController {
 		Users user = userService.findByEmail(email);
 		if (user != null) {
 			categoryService.initDefaultCategory(user);
-			System.out.println("\n✅ 사용자 생성이 완료되었습니다.");
 		}
 	}
 
@@ -68,14 +82,17 @@ public class UserController {
 			return false;
 		}
 
-		System.out.print("정말로 삭제하시겠습니까? (y/n): ");
+		System.out.print("정말로 삭제하시겠습니까? (Y/N): ");
 		String confirm = scanner.nextLine().trim().toLowerCase();
 		if (!confirm.equals("y")) {
 			System.out.println("🚫 사용자 삭제가 취소되었습니다.");
 			return false;
 		}
 
+		// ✅ 순서: 거래 → 자산 → 카테고리 → 사용자
+		transactionService.deleteAllByUser(currentUser);
 		assetService.deleteAllByUser(currentUser);
+		categoryService.deleteAllByUser(currentUser);
 		userService.deleteUser(currentUser);
 		currentUser = null;
 
