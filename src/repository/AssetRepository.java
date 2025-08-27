@@ -11,11 +11,15 @@ import domain.Asset;
 import domain.Users;
 
 public class AssetRepository {
-	private final Map<UUID, List<Asset>> assetMap = new HashMap<>();
+
+	// 인메모리 DB (사용자별 자산 목록)
+	private static final Map<UUID, List<Asset>> assetMap = new HashMap<>();
 
 	// 저장
 	public void save(Asset asset) {
-		assetMap.computeIfAbsent(asset.getUsers().getId(), k -> new ArrayList<>()).add(asset);
+		assetMap
+				.computeIfAbsent(asset.getUsers().getId(), k -> new ArrayList<>())
+				.add(asset);
 	}
 
 	// 특정 사용자 자산 전체 조회
@@ -26,26 +30,28 @@ public class AssetRepository {
 	// 동일한 이름+유형 자산 존재 여부
 	public boolean exists(Users user, String name, String type) {
 		return findByUser(user).stream()
-				.anyMatch(a -> a.getName().equalsIgnoreCase(name) && a.getType().equalsIgnoreCase(type));
+				.anyMatch(a ->
+						a.getName().equalsIgnoreCase(name) &&
+								a.getType().equalsIgnoreCase(type)
+				);
 	}
 
 	// 자산 조회
 	public Optional<Asset> findById(Users user, UUID id) {
-		return findByUser(user).stream().filter(asset -> asset.getId().equals(id)).findFirst();
+		return findByUser(user).stream()
+				.filter(asset -> asset.getId().equals(id))
+				.findFirst();
 	}
 
-	// 삭제
+	// 삭제 (ID 기준)
 	public boolean deleteById(Users user, UUID id) {
 		return findByUser(user).removeIf(asset -> asset.getId().equals(id));
 	}
 
-	// Asset 객체 자체로 삭제
+	// 삭제 (객체 기준)
 	public boolean delete(Asset target) {
 		List<Asset> list = assetMap.get(target.getUsers().getId());
-		if (list != null) {
-			return list.remove(target);
-		}
-		return false;
+		return list != null && list.remove(target);
 	}
 
 	// 유저 탈퇴 시 자산 전체 삭제

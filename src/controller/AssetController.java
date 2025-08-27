@@ -15,6 +15,12 @@ public class AssetController {
 	private final AssetService assetService;
 	private Users currentUser;
 
+	// 간소 생성자 - MainApp이 서비스 모름
+	public AssetController(Scanner scanner) {
+		this.scanner = scanner;
+		this.assetService = new AssetService();
+	}
+
 	public AssetController(Scanner scanner, AssetService assetService) {
 		this.scanner = scanner;
 		this.assetService = assetService;

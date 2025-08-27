@@ -5,7 +5,7 @@ import java.util.Scanner;
 import java.util.UUID;
 
 import domain.Category;
-import domain.CategoryKind;
+import enums.CategoryKind;
 import domain.Users;
 import service.CategoryService;
 
@@ -15,6 +15,14 @@ public class CategoryController {
 	private final CategoryService categoryService;
 	private Users currentUser;
 
+	// 간소 생성자 - 기본 레포를 내부에서 생성
+	public CategoryController(Scanner scanner, Users user) {
+		this.scanner = scanner;
+		this.currentUser = user;
+		this.categoryService = new CategoryService();
+	}
+
+	// 기본 생성자 - 외부에서 레포 전달(교체 용이)
 	public CategoryController(Scanner scanner, Users currentUser, CategoryService categoryService) {
 		this.scanner = scanner;
 		this.currentUser = currentUser;

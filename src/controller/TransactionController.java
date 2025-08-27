@@ -10,7 +10,7 @@ import java.util.stream.Collectors;
 
 import domain.Asset;
 import domain.Category;
-import domain.CategoryKind;
+import enums.CategoryKind;
 import domain.Transaction;
 import domain.Users;
 import service.AssetService;
@@ -25,6 +25,16 @@ public class TransactionController {
 	private final CategoryService categoryService;
 	private final AssetService assetService;
 
+	// 간소 생성사 - 기본 레포를 내부에서 생성
+	public TransactionController(Scanner scanner, Users currentUser) {
+		this.scanner = scanner;
+		this.currentUser = currentUser;
+		this.transactionService = new TransactionService();
+		this.categoryService = new CategoryService();
+		this.assetService = new AssetService();
+	}
+
+	// 기본 생성자 - 외부에서 레포 주입(교체 용이)
 	public TransactionController(Scanner scanner, Users currentUser, TransactionService transactionService,
 			CategoryService categoryService, AssetService assetService) {
 		this.scanner = scanner;

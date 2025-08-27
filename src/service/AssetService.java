@@ -15,6 +15,10 @@ public class AssetService {
 	private final AssetRepository assetRepository;
 	// private final RecordRepository recordRepository;
 
+	public AssetService() {
+		this.assetRepository = new AssetRepository();
+	}
+
 	public AssetService(AssetRepository assetRepository) {
 		this.assetRepository = assetRepository;
 		// this.recordRepository = new RecordRepository();

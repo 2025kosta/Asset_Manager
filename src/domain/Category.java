@@ -1,5 +1,7 @@
 package domain;
 
+import enums.CategoryKind;
+
 import java.util.UUID;
 
 public class Category {

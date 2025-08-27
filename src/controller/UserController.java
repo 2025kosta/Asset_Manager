@@ -14,6 +14,15 @@ public class UserController {
 	private Users currentUser;
 	private final CategoryService categoryService;
 
+	// 간소 생성사 - 기본 레포를 내부에서 생성
+	public UserController(Scanner scanner) {
+		this.scanner = scanner;
+		this.userService = new UserService();
+		this.assetService = new AssetService();
+		this.categoryService = new CategoryService();
+	}
+
+	// 기본 생성자 - 외부에서 레포 주입(교체 용이)
 	public UserController(Scanner scanner, UserService userService, AssetService assetService,
 			CategoryService categoryService) {
 		this.scanner = scanner;
@@ -36,7 +45,6 @@ public class UserController {
 		Users user = userService.findByEmail(email);
 		if (user != null) {
 			categoryService.initDefaultCategory(user);
-			System.out.println("\n✅ 사용자 생성이 완료되었습니다.");
 		}
 	}
 
