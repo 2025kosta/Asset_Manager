@@ -48,6 +48,17 @@ public class AssetService {
 				.collect(Collectors.toList());
 	}
 
+	public List<Asset> findAssetsByUserAndType(Users user, String type) {
+		if (type == null || type.trim().isEmpty()) {
+			return findAssetsByUser(user);
+		}
+		String want = type.trim();
+		return assetRepository.findByUser(user).stream()
+				.filter(a -> a.getType() != null && a.getType().equalsIgnoreCase(want))
+				.sorted(Comparator.comparing(Asset::getType).thenComparing(Asset::getName))
+				.collect(Collectors.toList());
+	}
+
 	public Optional<Asset> findById(Users user, UUID assetId) {
 		return assetRepository.findById(user, assetId);
 	}
