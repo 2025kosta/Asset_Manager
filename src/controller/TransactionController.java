@@ -257,7 +257,7 @@ public class TransactionController {
 
 	private void searchTransactions() {
 		System.out.println("\n[🔎 기록 조회 및 검색]");
-		System.out.println("💡 각 항목에서 Enter는 해당 조건을 건너뜁니다.");
+		System.out.println("\n💡 각 항목에서 Enter는 해당 조건을 건너뜁니다.\n");
 
 		try {
 			System.out.print(PROMPT_START);

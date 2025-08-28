@@ -24,6 +24,8 @@ public class AssetController {
 	private static final String MSG_NO_ASSET_FOR_DELETE = "\n⚠️ 삭제할 자산이 없습니다.";
 	private static final String MSG_NO_ASSET_REGISTERED = "⚠️ 등록된 자산이 없습니다.";
 	private static final String MSG_CANCELLED = "🚫 삭제가 취소되었습니다.";
+	private static final String CANCEL = "__CANCEL__";
+
 
 	// 테이블 포맷
 	private static final String HEADER_FMT = "%-4s %-14s %-10s %16s%n";
@@ -182,29 +184,92 @@ public class AssetController {
 
 	private void viewAssets() {
 		System.out.println("\n[📋 자산 조회]");
-		System.out.println(SEP);
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 
-		List<Asset> assets = assetService.findAssetsByUser(currentUser);
-
-		if (assets.isEmpty()) {
-			System.out.println(MSG_NO_ASSET_REGISTERED);
-			System.out.println(SEP);
+		List<Asset> all = assetService.findAssetsByUser(currentUser);
+		if (all.isEmpty()) {
+			System.out.println("⚠️ 등록된 자산이 없습니다.");
+			System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
 			return;
 		}
 
+		// ✅ 자산 유형 선택: Enter = 전체, 0 = 취소(이전 메뉴)
+		String selectedType = selectAssetType(); // null=전체, "__CANCEL__"=취소
+		if ("__CANCEL__".equals(selectedType)) {
+			return; // 조회 자체 취소
+		}
+
+		List<Asset> assets = (selectedType == null)
+				? all
+				: assetService.findAssetsByUserAndType(currentUser, selectedType);
+
+		// 표 출력 (기존 형식 유지)
+		final String H    = "%-4s %-14s %-10s %16s%n";
+		final String R    = "%-4d %-14s %-10s %,16d원%n";
+		final String LINE = "--------------------------------------------------------------";
+
 		long total = 0;
 
-		System.out.printf(HEADER_FMT, "번호", "자산명", "유형", "잔액");
+		System.out.printf(H, "번호", "자산명", "유형", "잔액");
 		System.out.println(LINE);
 
 		int idx = 1;
 		for (Asset a : assets) {
-			System.out.printf(ROW_FMT, idx++, a.getName(), a.getType(), a.getBalance());
+			System.out.printf(R, idx++, a.getName(), a.getType(), a.getBalance());
 			total += a.getBalance();
 		}
 
 		System.out.println(LINE);
 		System.out.printf("총 합계: %,d원%n", total);
-		System.out.println(SEP);
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+	}
+
+	private String selectAssetType() {
+		// 현재 유저 보유 자산에서 유형 목록 추출
+		List<Asset> all = assetService.findAssetsByUser(currentUser);
+		List<String> types = all.stream()
+				.map(Asset::getType)
+				.filter(t -> t != null && !t.isBlank())
+				.distinct()
+				.sorted(String::compareToIgnoreCase)
+				.toList();
+
+		// 유형이 하나도 없으면 그냥 전체로 본다 (Enter와 동일)
+		if (types.isEmpty()) {
+			return null; // 전체
+		}
+
+		System.out.println("━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━");
+		System.out.println("[🏷️ 자산 유형 선택]");
+		System.out.println("번호  유형");
+		System.out.println("--------------------------------------------------");
+		for (int i = 0; i < types.size(); i++) {
+			System.out.printf("%-4d %-16s%n", (i + 1), types.get(i));
+		}
+		System.out.println("--------------------------------------------------");
+
+		while (true) {
+			System.out.print("👉 번호 선택 (0: 취소, Enter: 전체): ");
+			String input = scanner.nextLine().trim();
+
+			// Enter → 전체(필터 없음)
+			if (input.isBlank()) {
+				return null;
+			}
+			// 0 → 조회 취소
+			if (input.equals("0")) {
+				return CANCEL;
+			}
+			// 번호 선택
+			try {
+				int idx = Integer.parseInt(input);
+				if (idx >= 1 && idx <= types.size()) {
+					return types.get(idx - 1);
+				}
+				System.out.println("❌ 잘못된 번호입니다.");
+			} catch (NumberFormatException e) {
+				System.out.println("❌ 숫자로 입력해야 합니다.");
+			}
+		}
 	}
 }
